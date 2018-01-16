@@ -10,12 +10,12 @@ load_dotenv(find_dotenv())
 
 client = discord.Client()
 allowed_roles = [
-    'Grand Master',
-    'Diamond',
-    'Platinum',
-    'Gold',
-    'Silver',
-    'Bronze'
+    { 'role': 'Grand Master', 'term': ['grand master', 'master'] },
+    { 'role': 'Diamond', 'term': ['diamond', 'diamante'] },
+    { 'role': 'Platinum', 'term': ['platina', 'platinum'] },
+    { 'role': 'Gold', 'term': ['ouro', 'gold'] },
+    { 'role': 'Silver', 'term': ['prata', 'silver'] },
+    { 'role': 'Bronze', 'term': ['bronze'] }
 ]
 
 @client.event
@@ -30,9 +30,11 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    content = message.content.strip()
+
     # Remove mensagens de invites para outros Discords
     pattern = 'https?:\/\/discord\.gg\/(\w+)'
-    match = re.search(pattern, message.content)
+    match = re.search(pattern, content)
 
     if match:
         code = match.group(1)
@@ -44,20 +46,20 @@ async def on_message(message):
 
 
     # Troca de elo
-    if message.content.strip().startswith('!elo'):
-        entered_rank = message.content[5:].lower().title().strip()
-        role = discord.utils.get(message.server.roles, name=entered_rank)
+    if content.startswith('!elo'):
+        entered_rank = content[5:].lower().strip()
+        role_name = [item['role'] for item in allowed_roles if entered_rank in item['term']]
 
-        roles = discord.utils.get(message.server.roles)
-        valid_roles = [i for i in message.server.roles if i.name in allowed_roles]
+        if role_name:
+            role = discord.utils.get(message.server.roles, name=role_name[0])
+            valid_roles = [i['role'] for i in allowed_roles]
 
-        if entered_rank in allowed_roles:
             user_roles = message.author.roles
-            user_roles = [i for i in user_roles if i not in valid_roles]
+            user_roles = [i for i in user_roles if i.name not in valid_roles]
 
             user_roles.append(role)
 
-            msg = '{0.author.mention}, mudei seu elo para {1}!'.format(message, entered_rank)
+            msg = '{0.author.mention}, mudei seu elo para {1}!'.format(message, role.name)
 
             await client.replace_roles(message.author, *user_roles)
             await client.send_message(message.channel, msg)
