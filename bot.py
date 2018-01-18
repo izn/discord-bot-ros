@@ -32,6 +32,13 @@ async def on_message(message):
 
     content = message.content.strip()
 
+    # Remove anexos das mensagens do #geral e notifica o usuário
+    if message.attachments and message.channel.name == 'geral':
+        msg = '{0.author.mention}, não é permitido enviar anexos (imagens, arquivos, etc) aqui!'.format(message)
+
+        await client.send_message(message.channel, msg)
+        await client.delete_message(message)
+
     # Remove mensagens de invites para outros Discords
     pattern = 'https?:\/\/discord\.gg\/(\w+)'
     match = re.search(pattern, content)
