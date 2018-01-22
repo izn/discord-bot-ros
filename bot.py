@@ -1,3 +1,4 @@
+from dotenv import load_dotenv, find_dotenv
 import discord
 import asyncio
 import json
@@ -5,11 +6,11 @@ import os
 import requests
 import re
 
-from dotenv import load_dotenv, find_dotenv
+
 load_dotenv(find_dotenv())
 
 client = discord.Client()
-allowed_roles = [
+ALLOWED_ROLES = [
     { 'role': 'Grand Master', 'term': ['grand master', 'master'] },
     { 'role': 'Diamond', 'term': ['diamond', 'diamante'] },
     { 'role': 'Platinum', 'term': ['platina', 'platinum'] },
@@ -17,6 +18,8 @@ allowed_roles = [
     { 'role': 'Silver', 'term': ['prata', 'silver'] },
     { 'role': 'Bronze', 'term': ['bronze'] }
 ]
+
+TWITCH_PARTNERS = ['lordangelxd', 'pentagramasg', 'dislley']
 
 @client.event
 async def on_ready():
@@ -39,12 +42,22 @@ async def on_message(message):
         await client.send_message(message.channel, msg)
         await client.delete_message(message)
 
+    # Remove mensagens de Twitch não parceiras
+    pattern = 'https?:\/\/(?:www\.)?twitch\.tv\/(\w+)'
+    twitch_match = re.search(pattern, content)
+
+    if twitch_match:
+        twitch_channel = twitch_match.group(1).lower()
+
+        if twitch_channel not in TWITCH_PARTNERS:
+            await client.delete_message(message)
+
     # Remove mensagens de invites para outros Discords
     pattern = 'https?:\/\/discord\.gg\/(\w+)'
-    match = re.search(pattern, content)
+    discord_match = re.search(pattern, content)
 
-    if match:
-        code = match.group(1)
+    if discord_match:
+        code = discord_match.group(1)
         r = requests.get("https://discordapp.com/api/v6/invites/%s" % code)
         data = json.loads(r.text)
 
@@ -55,11 +68,11 @@ async def on_message(message):
     # Troca de elo
     if content.startswith('!elo'):
         entered_rank = content[5:].lower().strip()
-        role_name = [item['role'] for item in allowed_roles if entered_rank in item['term']]
+        role_name = [item['role'] for item in ALLOWED_ROLES if entered_rank in item['term']]
 
         if role_name:
             role = discord.utils.get(message.server.roles, name=role_name[0])
-            valid_roles = [i['role'] for i in allowed_roles]
+            valid_roles = [i['role'] for i in ALLOWED_ROLES]
 
             user_roles = message.author.roles
             user_roles = [i for i in user_roles if i.name not in valid_roles]
@@ -73,5 +86,6 @@ async def on_message(message):
         else:
             msg = '{0.author.mention}, os elos possíveis são: Grand Master, Diamond, Platinum, Gold, Silver ou Bronze.'.format(message)
             await client.send_message(message.channel, msg)
+
 
 client.run(os.environ.get('DISCORD_TOKEN'))
