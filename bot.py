@@ -10,6 +10,10 @@ import re
 load_dotenv(find_dotenv())
 
 client = discord.Client()
+
+ADMIN_ROLE_ID = '400770147922739200'
+MODERATOR_ROLE_ID = '401477585038606347'
+TWITCH_ROLE_ID = '402588361988243466'
 ALLOWED_ROLES = [
     { 'role': 'Grand Master', 'term': ['grand master', 'master'] },
     { 'role': 'Diamond', 'term': ['diamond', 'diamante'] },
@@ -19,7 +23,6 @@ ALLOWED_ROLES = [
     { 'role': 'Bronze', 'term': ['bronze'] }
 ]
 
-TWITCH_PARTNERS = ['lordangelxd', 'pentagramasg', 'dislley']
 
 @client.event
 async def on_ready():
@@ -34,25 +37,24 @@ async def on_message(message):
         return
 
     content = message.content.strip()
+    author_roles = [a.id for a in message.author.roles]
 
-    # Remove anexos das mensagens do #geral e notifica o usuário
+    if ADMIN_ROLE_ID in author_roles or MODERATOR_ROLE_ID in author_roles:
+        return
+
     if message.attachments and message.channel.name == 'geral':
         msg = '{0.author.mention}, não é permitido enviar anexos (imagens, arquivos, etc) aqui!'.format(message)
 
         await client.send_message(message.channel, msg)
         await client.delete_message(message)
 
-    # Remove mensagens de Twitch não parceiras
     pattern = 'https?:\/\/(?:www\.)?twitch\.tv\/(\w+)'
     twitch_match = re.search(pattern, content)
 
     if twitch_match:
-        twitch_channel = twitch_match.group(1).lower()
-
-        if twitch_channel not in TWITCH_PARTNERS:
+        if TWITCH_ROLE_ID not in author_roles:
             await client.delete_message(message)
 
-    # Remove mensagens de invites para outros Discords
     pattern = 'https?:\/\/discord\.gg\/(\w+)'
     discord_match = re.search(pattern, content)
 
@@ -64,8 +66,6 @@ async def on_message(message):
         if data.get('guild').get('id') != os.environ.get('DISCORD_MAIN_SERVER_ID'):
             await client.delete_message(message)
 
-
-    # Troca de elo
     if content.startswith('!elo'):
         entered_rank = content[5:].lower().strip()
         role_name = [item['role'] for item in ALLOWED_ROLES if entered_rank in item['term']]
