@@ -11,10 +11,10 @@ load_dotenv(find_dotenv())
 
 client = discord.Client()
 
-ADMIN_ROLE_ID = os.environ.get('DISCORD_MAIN_SERVER_ID')
-MODERATOR_ROLE_ID = os.environ.get('DISCORD_MAIN_SERVER_ID')
-TWITCH_ROLE_ID = os.environ.get('DISCORD_MAIN_SERVER_ID')
-MUTED_ROLE = os.environ.get('DISCORD_MAIN_SERVER_ID')
+ADMIN_ROLE_ID = os.environ.get('DISCORD_CHANNEL_ADMIN_ROLE_ID')
+MODERATOR_ROLE_ID = os.environ.get('DISCORD_CHANNEL_MODERATOR_ROLE_ID')
+TWITCH_ROLE_ID = os.environ.get('DISCORD_CHANNEL_TWITCH_ROLE_ID')
+MUTED_ROLE = os.environ.get('DISCORD_CHANNEL_MUTED_ROLE')
 ALLOWED_ROLES = [
     { 'role': 'Grand Master', 'term': ['grand master', 'master'] },
     { 'role': 'Diamond', 'term': ['diamond', 'diamante'] },
