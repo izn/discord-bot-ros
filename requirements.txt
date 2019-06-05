@@ -1,13 +1,14 @@
+-i https://pypi.python.org/simple/
 aiohttp==1.0.5
-async-timeout==2.0.0
-certifi==2017.11.5
+async-timeout==3.0.1
+certifi==2019.3.9
 chardet==3.0.4
-click==6.7
-discord==0.0.2
+click==7.0
 discord.py==0.16.12
-idna==2.6
-multidict==4.0.0
+discord==0.0.2
+idna==2.7
+multidict==4.5.2
 python-dotenv==0.7.1
-requests==2.18.4
-urllib3==1.22
+requests==2.20.0
+urllib3==1.24.3
 websockets==3.4
